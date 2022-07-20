@@ -11,3 +11,19 @@ Futures Trading Strategy based on Markov Switching GARCH
 - model each asset separately
 - Different indicators in different regimes
 - put into paper trading in Alpaca
+
+### 1. Test Indicators
+
+* Trend Following in Low Vol
+
+* Mean Reverting in High Vol
+
+### 2. MSGARCH Model
+
+* Volatility Regime for each instrument
+
+### 3. Allocation Model
+
+* Dynamic Allocation, Risk Parity across asset classes
+
+
