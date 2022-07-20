@@ -1,0 +1,191 @@
+---
+title: "A Volatility Regime Classification Trading Strategy"
+author:
+  - "Zhengshun You"
+  - "Yiming Zou"
+  - "Yipu Jin"
+  - "Jinfan Hu"
+date: '2022-05-14'
+output:
+  pdf_document:
+    latex_engine: xelatex
+bibliography: bib_strat.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+require(zoo)
+require(xts)
+library(TTR)
+library(quantmod)
+require(FinancialInstrument)
+require(PerformanceAnalytics)
+require(quantstrat)
+library(tidyr)
+require(MSGARCH)
+library(beanplot)
+library(rCharts)
+library(reshape)
+library(gamlss.util)
+
+setwd("D:/Career/Spring 2022/Trading System Design/Markov Switching Portfolio")
+
+options("getSymbols.warning4.0"=FALSE)
+options("getSymbols.yahoo.warning"=FALSE)
+```
+
+
+
+# 1. Overview
+
+We introduced a trading strategy that use different parameters of indicators for different market regimes to capture the momentum of the asset price. We choose MACD as our indicators and classify the market regime based on volatility. Our process can be summarized in the following aspects:
+
+* Instrument: SPDR S&P 500 ETF Trust(SPY) from 1993 to 2020
+* Volatility regime Classification (high/low)
+* Markov-Switching GARCH model to fit and predict the volatility regime
+* Indicators: Moving average convergence divergence(MACD)
+* Signals and Rules: Apply different MACD parameters under different market volatility
+* Optimization: Find the optimal numbers of SMA values & thresholds/periods to classify the regimes
+
+
+
+# 5. Markov Switching GARCH Model
+
+We use Markov Switching GARCH to identify and predict volatility regimes. This model has been used in various academic researches([@Bauwens2010], [@Caporale2019], [@Chen2009], [@Augustyniak2014, @Francq2008]) as well as real production in the industry.
+
+## 5.1. Instroduction
+
+The general Markov-Switching GARCH specification can be expressed as:[@Ardia2017]
+$$
+y_t|(s_t = k, F_{t-1}) \sim D(0, h_{k,t}, \delta_k)
+$$
+where $D(0, h_{k,t}, \delta_k$ is a continuous distribution with a zero mean, time-varying variance $h_{k,t}$ , and additional shape parameters (e.g., asymmetry) gathered in the vector $\delta_k$. $s_t$ is the latent variables that evolves according to an unobserved first-order ergodic homogeneous Markov chain. $F_{t}$ is the filter of information we have by the time $t$.
+
+Here is a chart about the realized volatility of SPY from 1993 to 2012. We will use it to evaluate our regime switching model.
+
+```{r spy_realized_vol, include=FALSE}
+# calculate daily returns
+retSPY <- dailyReturn(Cl(SPY))
+rSPY <- cbind.xts(dailyReturn(SPY$SPY.Open),dailyReturn(SPY$SPY.High),
+                    dailyReturn(SPY$SPY.Low), dailyReturn(SPY$SPY.Close),
+                    dailyReturn(SPY$SPY.Adjusted))
+
+# extract data from 1993-01-04 to 1999-12-31
+rSPY90s <- window(retSPY, start = '1993-01-03', end = '2012-12-31')
+SPY90s <- window(SPY, start = '1993-01-03', end = '2012-12-31')
+
+# calculate realized 20-days volatility
+volSPY <- data.frame(rollapply(rSPY90s, width = 21, FUN = "sd", 
+                               by = 1, na.rm = TRUE))*252/21
+volSPY <- xts(volSPY, order.by = index(rSPY90s))
+```
+
+```{r SPY_vol,echo=FALSE}
+# plot
+chart_Series(volSPY, name = "Annualized Realized Volatility")
+```
+
+## 5.2. Literature Review
+
+**“Theory and inference for a Markov switching GARCH model” Bauwens, L., Preminger, A., & Rombouts, J. V. K. (2010).**[@Bauwens2010]
+
+The paper extends the topic on the Markov-switching GARCH model, which was first introduced by Gray (1996) and moderately modified by Haas et al. (2004). The probabilistic properties and the estimation of a MS-GARCH model is developed and discussed in this paper. What makes their model different from Gray’s (1996) model is that the conditional variance at each time depends on the whole regime path. This allows the model to better accommodate volatility clustering. The paper served as an introduction to the concepts of MS-GARCH models, and a guideline throughout our regime and strategy design process. 
+
+**“Forecasting risk with Markov-switching GARCH models: A large-scale performance study” Ardia, D., Bluteau, K., Boudt, K., & Catania, L. (2017).**[@Ardia2017]
+
+This paper aims to compare the forecasting power of single-regime and Markov-switching GARCH models in the scenario of risk management. As a result, they found that the MS-GARCH model is more accurate in forecasting Value-at-Risk, expected shortfall and left-tail distributions. Moreover, accounting for parameter uncertainty also improves the performance of predicting the left-tail risk. The paper guided us through the details of applying a Markov-switching mechanism into our strategy. The paper also introduced us to the R package MSGARCH, which greatly contributed in testing our strategy. 
+
+**“A Test of Using Markov-Switching GARCH Models in Oil and Natural Gas Trading” De la Torre-Torres, O. V., Galeana-Figueroa, E., & Álvarez-García, J. (2019).**[@Torre-Torres2019]
+
+A trading strategy for oil and natural gas, utilizing the two-regime Markov-switching GARCH model, has been discussed in detail in this paper. They implemented the next-trading rule, in which investors take long position in the commodities if they expect to be in the low-volatility regime in the next period, while sell the commodities and hold U.S. Treasury bills if otherwise. They concluded that the MS Gaussian model provides the best performance in trading oil. The strategy discussed in this paper is similar to our strategy to certain extent. It helped us to understand the application of Markov-switching mechanism in an active trading strategy. 
+
+## 5.3. Build a MSGARCH Model
+
+Here we built a simple Model with two regimes: high and low volatility regimes using GARCH(1,1). With Generalized Error Distribution [Nelson, Daniel B. “Conditional Heteroskedasticity in Asset Returns: A New Approach.” Econometrica, vol. 59, no. 2, 1991, pp. 347–70, https://doi.org/10.2307/2938260. Accessed 12 May 2022.]
+$$
+f(z) = \frac{\gamma e^{-\frac{1}{2}|z/\lambda|^{\gamma}}}{\lambda 2^{(1+1/\gamma)}\Gamma(1/\gamma)}
+$$
+Here is a brief summary of the model:
+```{r mkt_regime, echo=FALSE}
+# create a Markov-switching specification
+# MS-GARCH(1, 1)
+spec <- CreateSpec(variance.spec = list(model = c("sGARCH", "sGARCH")),
+                   distribution.spec = list(distribution = c("ged", "ged")))
+
+summary(spec)
+```
+
+## 5.4. Test on SPY returns
+
+We now use the daily return series of SPY to fit the MSGARCH model using Maximum Likelihood Estimation. And compare the in-sample predicted volatility with realized volatility.
+
+```{r fit_MSGARCH, include=FALSE}
+# fit the model on MKT by MLE
+set.seed(123)
+ms_fit1 <- FitML(spec = spec, data = rSPY90s)
+
+# Predict in-sample quantitative risk-measure
+# predvol <- Risk(ms_fit1, do.its = TRUE)
+
+# predict annualized in-sample volatility
+vol <- sqrt(252) * Volatility(ms_fit1)
+vol <- xts(vol, order.by = as.Date(index(vol)))
+
+# print probability distribution
+state <- as.data.frame(State(object = ms_fit1)$SmoothProb[,1,2])
+state_prob <- xts(state, order.by = as.Date(rownames(state)))
+```
+
+```{r visualize_MSGARCH, echo=FALSE}
+# visualization
+dev.new(width=10, height=10)
+chart_Series(volSPY, 
+             name = c("SPY 21-days Annualized Realized Volatility"), clev = 0.2)
+add_TA(state_prob, name = c("Probability for State One"))
+add_TA(vol, name = c("In-sample Volatility"))
+add_TA((vol-volSPY)/volSPY, name = c("Difference Volatility"))
+```
+
+We can tell from the comparison that the market can be classify into two distinctly seperated regimes, and our model can successfully capture most of the volatile periods, the "Doc-com bubble" in early 2000s, the 2008 financial crisis, as well as the European debt crisis in the early 2010s. However, our model always tend to overestimate the volatility. This may bring some bias in the back testing since the high volatility regime will occur much more often than reality, and the momentum generally work badly in volatile period. So the back test results may somehow seems worse than intuitively. 
+
+```{r regimes, include=FALSE}
+# identify different regimes
+highVol <- index(state_prob[state_prob > 0.5])
+lowVol <- index(state_prob[state_prob <= 0.5])
+
+state_prob$regime <- (state_prob>0.5)*1
+
+HvolSPY <- rSPY[highVol,]
+LvolSPY <- rSPY[lowVol,]
+
+HvolSPY <- apply(HvolSPY + 1, MARGIN = 2, cumprod)
+LvolSPY <- apply(LvolSPY + 1, MARGIN = 2, cumprod)
+
+for (i in 1:5){
+  HvolSPY[,i] = HvolSPY[,i]*as.numeric((SPY90s)[first(time(rSPY)),][,i])
+  LvolSPY[,i] = LvolSPY[,i]*as.numeric((SPY90s)[first(time(rSPY)),][,i])
+}
+
+HvolSPY <- xts(HvolSPY, order.by = as.Date(rownames(HvolSPY)))
+LvolSPY <- xts(LvolSPY, order.by = as.Date(rownames(LvolSPY)))
+
+colnames(HvolSPY) <- c("HvolSPY.Open", "HvolSPY.High", "HvolSPY.Low", 
+                       "HvolSPY.Close", "HvolSPY.Volume")
+colnames(LvolSPY) <- c("LvolSPY.Open", "LvolSPY.High", "LvolSPY.Low", 
+                       "LvolSPY.Close", "LvolSPY.Volume")
+```
+
+Note the the regimes are not continuous, in order to analyze their behavior and also for our analysis in later sections, we used the returns to reconstruct a continuous price curve on each regime.
+```{r chart_high_vol , message=FALSE, echo=FALSE}
+chart_Series(Cl(HvolSPY), col = "blue", name = "High Volatility times")
+```
+```{r chart_low_vol, message=FALSE, echo=FALSE}
+chart_Series(Cl(LvolSPY), col = "red", name = "Low Volatility times")
+```
+
+Here we use a F-test to should that the returns on different regimes are distinct.
+```{r Ftest_regimes, message=FALSE, echo=FALSE}
+var.test(rSPY[highVol,4], rSPY[lowVol,4])
+```
+From the F-test, we can tell that the variance of the two return series are not the same.
+
