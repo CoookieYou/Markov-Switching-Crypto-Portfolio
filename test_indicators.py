@@ -11,6 +11,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import yfinance as yf
+from scipy.stats import skew, kurtosis
 
 sns.set_style('darkgrid')
 
@@ -35,7 +36,7 @@ class indicators:
         get data from Yahoo! Finance
         '''
         tic = yf.Ticker(self.ticker)
-        data = tic.history(interval=interval, start_date, end_date)
+        data = tic.history(interval, start_date, end_date)
         
         return data
     
@@ -111,17 +112,13 @@ class indicators:
         
         return r
     
-    def return_distribution(self, start, end, mid = False, log = False):
+    def trades_stats(self, start, end, mid = False, log = False):
         '''
-        Visulize the distribution of return for each hypothetical trade
-        
-        start:
-            start of the testing period
-        end:
-            end of the testing period
+        Calculate trades statistics
+
         Returns
         -------
-        the return series of 
+        statistics of trades
 
         '''
         if not self.signals:
@@ -142,16 +139,78 @@ class indicators:
         trades = trades.where(trades!=0)
         trades['label'] = np.nan
         trades['return'] = self.returns()
-        trades.loc[trades.trades!=0] = trades.index.to_series()
+        trades.loc[trades.trades!=0] = trades.index.to_array()
         trade_type = trades.groupby('label')['trades'].mean()
         trade_return = trades.groupby('label')['return'].apply(lambda x: x.add(1).cumprod().sub(1).iloc[-1])
-        trades = pd.concat([trade_type, trade_return], axis = 1)
-        trades.columns = ['type', 'return']
-        trades['number'] = np.array(list(range(1, trades.shape[0]+1)))
+        trades_detail = pd.concat([trade_type, trade_return], axis = 1)
+        trades_detail.columns = ['type', 'return']
+        trades_detail['number'] = np.array(list(range(1, trades_detail.shape[0]+1)))
+        
+        stats = pd.DataFrame(index = ['mean', 'median', 'stddev', 'skewness', 'kurtosis'], 
+                             columns = ['short', 'long'])
+        stats.loc['mean'] = trades_detail.groupby('type')['return'].mean()
+        stats.loc['median'] = trades_detail.groupby('type')['return'].median()
+        stats.loc['stddev'] = trades_detail.groupby('type')['return'].std()
+        stats.loc['skewness'] = trades_detail.groupby('type')['return'].apply(lambda x: skew(x))
+        stats.loc['kurtosis'] = trades_detail.groupby('type')['return'].apply(lambda x: kurtosis(x))
+        
+        return {'statistics': stats, 
+                'details': trades_detail,
+                'time_series': trades}
+    
+    def return_distribution(self, start, end, mid = False, log = False):
+        '''
+        Visulize the distribution of return for each hypothetical trade
+        
+        start:
+            start of the testing period
+        end:
+            end of the testing period
+        Returns
+        -------
+        statistics of trades 
+
+        '''
+        stats = self.trade_stats(start, end, mid, log)['statistics']
         
         fig, ax = plt.subplots(figsize = (20, 10))
-        sns.scatterplot(x = 'number', y = 'return', hue = 'type', data = trades, ax = ax)
+        sns.displot(x = 'return', hue = 'type', data = trades, ax = ax)
         ax.set_title('Return distribution per trades', fontsize = 15)
         
-        return r
+        return stats
+    
+    def return_beanplot(self, periods, start, end, mid = False, log = False):
+        '''
+        Visuzlize the return distribution
+        with different holding periods
+
+        Returns
+        -------
+        None.
+
+        '''
+        trade_stats = self.trade_stats(start, end, mid, log)
+        details = trade_stats['details']
+        ts = trade_stats['time_series']
+        
+        all_returns = []
+        
+        for period in periods:
+            if log:
+                return_p = ts['return'].rolling(period).sum().shift(-p).loc[details.index]
+            else:
+                return_p = ts['return'].rolling(period).apply(lambda x: x.add(1).cumprod().sub(1).iloc[-1]).shift(-p).loc[details.index]
+            return_p = return_p.to_frame(name = 'return')
+            return_p['period'] = period
+            return_p['type'] = details['type']
+            
+            all_returns.append(return_p)
+            
+        fig, ax = plt.subplots(figsize = (20, 10))
+        sns.violinplot(x = 'period', y = 'return', hue = 'type', data = all_returns, ax = ax)
+        ax.set_title('Return distribution in periods')
+        
+        return
+    
+        
         
