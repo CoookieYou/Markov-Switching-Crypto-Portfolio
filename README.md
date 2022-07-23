@@ -14,13 +14,13 @@ Futures Trading Strategy based on Markov Switching GARCH
 
 ### 1. Test Indicators
 
-* Trend Following in Low Vol
-
-* Mean Reverting in High Vol
+* Different sets of indicators in different regimes
+* Use random forest as a regressor to predict the direction of movements
 
 ### 2. MSGARCH Model
 
 * Volatility Regime for each instrument
+* Predict future volatility as the input of allocation model
 
 ### 3. Allocation Model
 
