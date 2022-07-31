@@ -1,15 +1,9 @@
 ---
-title: "A Volatility Regime Classification Trading Strategy"
+title: "Markov Switching Portfolio"
 author:
   - "Zhengshun You"
-  - "Yiming Zou"
-  - "Yipu Jin"
-  - "Jinfan Hu"
-date: '2022-05-14'
 output:
-  pdf_document:
-    latex_engine: xelatex
-bibliography: bib_strat.bib
+  pdf_document
 ---
 
 ```{r setup, include=FALSE}
