@@ -1,16 +1,15 @@
 # Markov-Regime-Switching-Portfolio
-Futures Trading Strategy based on Markov Switching GARCH
+Crypto currencies Trading Strategy based on Markov Switching GARCH
+Data is from https://www.cryptodatadownload.com/data/gemini/
 
-### Trade on Futures of Stock Index/Treasury Security/Commodity
+- Trade on groups of crypto currencies
+-Use technical indicators in Random Forest to predict price movements
+- Dynamic Allocation based on downside risk predictions
 
-### Use different indicators on different Volatility Regimes
-
-### Dynamic Allocation based on downside risk predictions
-
-- trade futures of multiple asset class
-- model each asset separately
-- Different indicators in different regimes
-- put into paper trading in Alpaca
+### Specification for the strategy
+- trading frequency is hourly
+- use all asset data for model training
+- model each asset's risk profile separately
 
 ### 1. Test Indicators
 
@@ -24,6 +23,6 @@ Futures Trading Strategy based on Markov Switching GARCH
 
 ### 3. Allocation Model
 
-* Dynamic Allocation, Risk Parity across asset classes
+* Dynamic Allocation, Risk Parity across assets
 
 
