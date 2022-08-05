@@ -1,9 +1,10 @@
 # Markov-Regime-Switching-Portfolio
 Crypto currencies Trading Strategy based on Markov Switching GARCH
+
 Data is from https://www.cryptodatadownload.com/data/gemini/
 
 - Trade on groups of crypto currencies
--Use technical indicators in Random Forest to predict price movements
+- Use technical indicators in Random Forest to predict price movements
 - Dynamic Allocation based on downside risk predictions
 
 ### Specification for the strategy
