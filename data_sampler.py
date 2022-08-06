@@ -54,5 +54,73 @@ class data_manager:
         print('Pairs: ', pairs_list)
         
         return pairs_df
+    
+    def cusumFilter(self, data, h):
+        '''
+        Cusum Filter for sampling data points
+        
+        Reference:
+        [1] APA. Lopez de Prado, M. (2018). Advances in financial machine learning, 38-40
+        [2] Lam, K. and H. Yam (1997): “CUSUM techniques for technical trading in financial markets.” 
+            Financial Engineering and the Japanese Markets, Vol. 4, pp. 257–274
+
+        Parameters
+        ----------
+        data : pandas series or dataframe
+            price used in calculating returns for all assets
+        h:
+            threshold for 
+
+        Returns
+        -------
+        samples: dictionary of pandas index
+            contains index of all the sample data points for all assets
+
+        '''
+        
+        r = data.pct_change().iloc[1:]
+        
+        samples = {}
+        
+        for ticker in r.columns:
+            idx = self.getTEvents(r[ticker], h)
+            samples[ticker] = pd.DatetimeIndex(idx)
+            
+        return samples
+        
+        
+    def getTEvents(self, gRaw, h):
+        '''
+        Cusum Filter for single time-series
+        
+        see:
+            APA. Lopez de Prado, M. (2018). Advances in financial machine learning, Page 39
+
+        Parameters
+        ----------
+        gRaw : pandas series
+            raw return series
+        h : float
+            threshold for sampling
+
+        Returns
+        -------
+        list of index of the events
+
+        '''
+        tEvents,sPos,sNeg=[],0,0
+        diff=gRaw.diff()
+        
+        for i in diff.index[1:]:
+            sPos,sNeg=max(0,sPos+diff.loc[i]),min(0,sNeg+diff.loc[i])
+        
+        if sNeg<-h:
+            sNeg=0;tEvents.append(i)
+        elif sPos>h:
+            sPos=0;tEvents.append(i)
+            
+        return pd.DatetimeIndex(tEvents)
+        
+        
         
         
