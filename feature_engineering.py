@@ -17,7 +17,8 @@ class Indicators:
     Calculare Technical Indicators used to predict returns
     '''
 
-    self.TAdict = {'ADX': self.adx, 'CCI': self.cci, 'MACD': self.macd_hist,
+    def __init__(self):
+        self.TAdict = {'ADX': self.adx, 'CCI': self.cci, 'MACD': self.macd_hist,
                    'MOM': self.mom, 'RSI': self.rsi, 'FastK': self.fastk,
                    'WILLR': self.willr, 'OBV': self.obv, 'AD': self.adline, 
                    'ATR': self.natr, 'BlackCrows': self.tblackcrows, 
@@ -52,12 +53,12 @@ class Indicators:
     def mom(self, data, window = 10):
         '''Calculate momentum
         '''
-        mom = MOM(data.close, window)
+        mom = data.close.pct_change(window)
         
     def rsi(self, data, window = 14):
         '''Calculate Raletive Strength Index
         '''
-        rsi = RSI(data.lose, window)
+        rsi = RSI(data.close, window)
         
         return rsi
     
@@ -131,7 +132,7 @@ class Indicators:
     def vol(self, data, window = 5, nbdev = 1):
         '''Volatility
         '''
-        vol = STDDEV(data.close, window, nbdev)
+        vol = data.close.rolling(window).std().mul(nbdev)
         
     def pool(self, data, params):
         '''Calculate a pool of indicators
@@ -143,15 +144,10 @@ class Indicators:
         
         ind = pd.DataFrame(index = data.index, columns = list(params.keys()))
         for ta in params:
-            ind[ta] = self.TAdict[ta](data, params[ta])
+            ind[ta] = self.TAdict[ta](data, **params[ta])
             
         return ind
         
-        
-        
-        
-        
     
     
     
-

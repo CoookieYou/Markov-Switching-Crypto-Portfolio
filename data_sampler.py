@@ -9,18 +9,17 @@ Created on Thu Aug  4 20:30:29 2022
 
 import pandas as pd
 import numpy as np
-import datatable as dt
 import os
 
 class data_manager:
     '''
     A class for data management
     '''
-    def __init__(self):
+    def __init__(self, datadir = r"D:\Career\Quant\My_Research\Markov_Switching_Portfolio\cryptodatadownload"):
         # hourly crypto data dirctory
-        self.datadir = r"D:\Career\Quant\My_Research\Markov_Switching_Portfolio\cryptodatadownload"
+        self.datadir = datadir
         
-    def readPair(self, pairs, start, end, fields = ['open', 'high', 'low', 'close', 'Volume']):
+    def readPair(self, pairs, start, end, fields = ['open', 'high', 'low', 'close', 'volume']):
         '''
         Read the pairs data
 
@@ -39,16 +38,17 @@ class data_manager:
             all data groupby pairs' names
 
         '''
-        pairs_list = pairs.split('_')
+        pairs_list = pairs.split(' ')
         pairs_df = {}
         
         for pair in pairs_list:
-            pairs_df[pair] = pd.read_csv(os.join(self.datadir, f"Gemini_{pair}_1h.csv"),
+            pairs_df[pair] = pd.read_csv(os.path.join(self.datadir, f"Gemini_{pair}_1h.csv"),
                                          skiprows = 1, index_col = 1, parse_dates = True)
+            pairs_df[pair].sort_index(inplace = True)
             pairs_df[pair] = pairs_df[pair].loc[start:end]
-            if 'Volume' in fields:
-                pairs_df[pair] = pairs_df[pair].rename({f'Volume_{pair[:-3]}': 'Volume'})
-            pairs_df[pair] = pairs_df[fields]
+            if 'volume' in fields:
+                pairs_df[pair] = pairs_df[pair].rename(columns = {f'Volume {pair[:-3]}': 'volume'})
+            pairs_df[pair] = pairs_df[pair][fields]
             
         pairs_df = pd.concat(pairs_df, axis = 0)
         print('Pairs: ', pairs_list)
@@ -114,13 +114,22 @@ class data_manager:
         for i in diff.index[1:]:
             sPos,sNeg=max(0,sPos+diff.loc[i]),min(0,sNeg+diff.loc[i])
         
-        if sNeg<-h:
-            sNeg=0;tEvents.append(i)
-        elif sPos>h:
-            sPos=0;tEvents.append(i)
+            if sNeg<-h:
+                sNeg=0
+                tEvents.append(i)
+            elif sPos>h:
+                sPos=0
+                tEvents.append(i)
             
         return pd.DatetimeIndex(tEvents)
         
-        
-        
-        
+
+
+"""For debug
+if __name__ == '__main__':
+    data = data_manager().readPair(pairs = "BTCUSD ETHUSD BATUSD FILUSD MKRUSD UNIUSD ZRXUSD",
+                               start='2020-11-01', end='2021-12-31')
+    btc_close = data.loc['BTCUSD'].close.to_frame(name = 'BTCUSD')
+    cusum = data_manager().cusumFilter(btc_close, .01)
+    print(cusum['BTCUSD'], btc_close.head(10).pct_change())
+"""

@@ -104,9 +104,9 @@ class random_forest:
         n = indicators.shape[0]
         train_idx = list(range(cv))
         valid_idx = list(range(cv, n))
-        custom_cv = zip(train_idx, test_idx)
+        custom_cv = zip(train_idx, valid_idx)
         
-        search = GridSearchCV(RandomForestRegressor, param_grid = params, cv = custom_cv, kwargs)
+        search = GridSearchCV(RandomForestRegressor, param_grid = params, cv = custom_cv, **kwargs)
         res_search = search.fit(indicators, returns)
         
         return res_search

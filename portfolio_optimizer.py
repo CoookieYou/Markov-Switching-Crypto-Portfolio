@@ -9,7 +9,7 @@ Created on Thu Aug  4 20:56:31 2022
 
 import pandas as pd
 import numpy as np
-import CVXPY as cvx
+import cvxpy as cvx
 
 class portfolio_optimizer:
     def __init__(self, mode = 'MVP'):
@@ -32,9 +32,10 @@ class portfolio_optimizer:
         '''
         n = cov_mat.shape[1]
         x = cvx.Variable(n)
-        objective = cvx.Minimize(cvx.sum_squares(x @ cov_mat @ x.t))
-        constraints = [0 <= x, x <= 1]
-        problem = cvx.Problem(objective, contraints)
+        
+        objective = cvx.Minimize(cvx.quad_form(x, cov_mat))
+        constraints = [0 <= x, x <= 1, cvx.sum(x) == 1]
+        problem = cvx.Problem(objective, constraints)
         
         results = problem.solve()
         weights = x.value
@@ -63,7 +64,7 @@ class portfolio_optimizer:
         
         beta = np.ones(shape = (historical.shape[1]))
         for i in range(historical.shape[1]):
-            beta[i] = np.polyfit(historical,iloc[:, i], market, deg = 1)[0]
+            beta[i] = np.polyfit(historical.iloc[:, i], market, deg = 1)[0]
             
         weights = 1/beta
         weights = weights/np.sum(weights)
@@ -71,3 +72,9 @@ class portfolio_optimizer:
         return weights
         
 
+
+"""For debug
+if __name__ == "__main__":
+    opt = portfolio_optimizer().mvp(cov_mat = np.array([[1, .2, .3], [.2, 1, .25], [.3, .25, 1]]))
+    print(opt)
+"""

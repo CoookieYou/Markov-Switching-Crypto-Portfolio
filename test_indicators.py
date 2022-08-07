@@ -15,7 +15,7 @@ from scipy.stats import skew, kurtosis
 
 sns.set_style('darkgrid')
 
-class indicators:
+class TestIndicators:
     def __init__(self, ticker, **kwargs):
         '''
         Initialize the class
@@ -127,7 +127,7 @@ class indicators:
         recalculate = False
         if not self.returns:
             recalculate = True
-        elif (self.returns.index[0].strftime("%Y-%m-%d")!=start) | () (self.returns.index[-1].strftime("%Y-%m-%d")!=end):
+        elif (self.returns.index[0].strftime("%Y-%m-%d")!=start) | (self.returns.index[-1].strftime("%Y-%m-%d")!=end):
             recalculate = True
             
         if recalculate:
@@ -174,7 +174,7 @@ class indicators:
         stats = self.trade_stats(start, end, mid, log)['statistics']
         
         fig, ax = plt.subplots(figsize = (20, 10))
-        sns.displot(x = 'return', hue = 'type', data = trades, ax = ax)
+        sns.displot(x = 'return', hue = 'type', data = stats, ax = ax)
         ax.set_title('Return distribution per trades', fontsize = 15)
         
         return stats
@@ -197,9 +197,9 @@ class indicators:
         
         for period in periods:
             if log:
-                return_p = ts['return'].rolling(period).sum().shift(-p).loc[details.index]
+                return_p = ts['return'].rolling(period).sum().shift(-period).loc[details.index]
             else:
-                return_p = ts['return'].rolling(period).apply(lambda x: x.add(1).cumprod().sub(1).iloc[-1]).shift(-p).loc[details.index]
+                return_p = ts['return'].rolling(period).apply(lambda x: x.add(1).cumprod().sub(1).iloc[-1]).shift(-period).loc[details.index]
             return_p = return_p.to_frame(name = 'return')
             return_p['period'] = period
             return_p['type'] = details['type']
