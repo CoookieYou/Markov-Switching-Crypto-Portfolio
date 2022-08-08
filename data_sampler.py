@@ -55,7 +55,7 @@ class data_manager:
         
         return pairs_df
     
-    def cusumFilter(self, data, h):
+    def cusumFilter(self, r, h):
         '''
         Cusum Filter for sampling data points
         
@@ -78,7 +78,7 @@ class data_manager:
 
         '''
         
-        r = data.pct_change().iloc[1:]
+        # r = data.pct_change().iloc[1:]
         
         samples = {}
         
