@@ -15,6 +15,24 @@ class portfolio_optimizer:
     def __init__(self, mode = 'MVP'):
         self.mode = mode        # default: minimum-variance portfolio
         
+    def getCovMat(self, r):
+        '''
+        Geneate covariance matrix from return series
+
+        Parameters
+        ----------
+        r : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        None.
+
+        '''
+        cov_mat = ((r.std().values.reshape(-1,1) @ r.std().values.reshape(-1,1).T) * r.corr().values)
+        
+        return cov_mat
+        
     def mvp(self, cov_mat):
         '''
         Minimum-Variance Portfolio
