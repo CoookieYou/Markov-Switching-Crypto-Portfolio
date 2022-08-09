@@ -7,12 +7,21 @@ Data is from https://www.cryptodatadownload.com/data/gemini/
 - Use technical indicators in Random Forest to predict price movements
 - Dynamic Allocation based on downside risk predictions
 
-### Specification for the strategy
+## Specification for the strategy
 - trading frequency is hourly
 - use all asset data for model training
 - model each asset's risk profile separately
 
-### 1. Indicators
+## 1. Sample Features
+
+Use Cusum filter(Lam, K. and H. Yam (1997): “CUSUM techniques for technical trading in financial markets.” 
+            Financial Engineering and the Japanese Markets, Vol. 4, pp. 257–274) to sample the data points that observed significant price movements
+
+Train the model with the selected samples.
+
+<img src="https://user-images.githubusercontent.com/60916875/183550956-b68c7858-66b8-4cbd-b216-788c0d0afd55.png" width = "750">
+
+## 2. Indicators
 
 * Select from a bunch of technical indicators that illustrate either momentum or volatility
   * Average Directional Index
@@ -31,7 +40,7 @@ Data is from https://www.cryptodatadownload.com/data/gemini/
 * Use random forest as a regressor to predict the direction of movements
   * Relative high frequency, so should use non-linear model for more convexity
 
-### 2. MSGARCH Model
+## 3. MSGARCH Model
 
 The general Markov-Switching GARCH specification can be expressed as: (Ardia et al. 2017 https://doi.org/10.1016/j.ijforecast.2018.05.004.)
 
@@ -46,8 +55,14 @@ An illustration of MSGARCH on SPY: the black line is the probability of being in
 * Detect Volatility Regime for each instrument
 * Predict future volatility as the input of allocation model to replace realized volatility
 
-### 3. Allocation Model
+## 4. Allocation Model
 
 * Rebalance weekly, based on forecast volatility, following minimum variance principle across assets
 
+## Reference
 
+[1] Lam, K. and H. Yam (1997): “CUSUM techniques for technical trading in financial markets.” Financial Engineering and the Japanese Markets, Vol. 4, pp. 257–274
+
+[2] David Ardia, Keven Bluteau, Kris Boudt, Leopoldo Catania, "Forecasting risk with Markov-switching GARCH models:A large-scale performance study", International Journal of Forecasting, Volume 34, Issue 4
+
+[3] APA. Lopez de Prado, M. (2018). Advances in financial machine learning, 38-40
