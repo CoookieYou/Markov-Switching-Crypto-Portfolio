@@ -1,16 +1,16 @@
 # Markov-Regime-Switching-Portfolio
-Crypto currencies Trading Strategy based on Markov Switching GARCH
+*Crypto currencies Trading Strategy based on Markov Switching GARCH*
 
 Data from https://www.cryptodatadownload.com/data/gemini/
 
-- Trade on groups of crypto currencies
-- Use technical indicators in Random Forest to predict price movements
-- Dynamic Allocation based on downside risk predictions
+- Trade on a group of crypto currencies
+- Ensemble technical indicators in Random Forest to predict price movements
+- Portfolio Allocation based on volatility predictions
 
 ## Specification for the strategy
-- trading frequency is hourly
-- use all asset data for model training
-- model each asset's risk profile separately
+- Set trading frequency as hourly
+- Used all asset data for model training
+- Modeled each asset's risk profile separately
 
 ## 1. Sample Features
 
@@ -34,11 +34,11 @@ Train the model with the selected samples.
   * Slope of Linear Regression
   * Return Volatility
   
-<img src="https://user-images.githubusercontent.com/60916875/183321818-7e2fd509-469d-44db-b4e6-77ec59ef5819.png" width = "750">
+[Snapshot of technical indicators]<img src="https://user-images.githubusercontent.com/60916875/183321818-7e2fd509-469d-44db-b4e6-77ec59ef5819.png" width = "750">
 
   
 * Use random forest as a regressor to predict the direction of movements
-  * Relative high frequency, so should use non-linear model for more convexity
+  * Relatively high frequency, used non-linear model for more convexity
 
 ## 3. MSGARCH Model
 
@@ -50,7 +50,7 @@ where $D(0, h_{k,t})$, $\delta_k$ is a continuous distribution with a zero mean,
 
 An illustration of MSGARCH on SPY: the black line is the probability of being in the high volatility regime
 
-<img src="https://user-images.githubusercontent.com/60916875/183322196-b7c2b678-e552-4159-93ec-cd3b0a81ea14.png" width = "600">
+[Snapshot of MSGARCH]<img src="https://user-images.githubusercontent.com/60916875/183322196-b7c2b678-e552-4159-93ec-cd3b0a81ea14.png" width = "600">
 
 * Detect Volatility Regime for each instrument
 * Predict future volatility as the input of allocation model to replace realized volatility
@@ -58,6 +58,8 @@ An illustration of MSGARCH on SPY: the black line is the probability of being in
 ## 4. Allocation Model
 
 * Rebalance weekly, based on forecast volatility, following minimum variance principle across assets
+
+* Use forecast instead of historical volatilities to construct covariance matrix
 
 $max_{W} \sum_i \sum_j w_i w_j \sigma_i \sigma_j \rho_{ij}$
 
@@ -75,3 +77,5 @@ See the notebook [here](https://github.com/CoookieYou/Markov-Switching-Crypto-Po
 [2] David Ardia, Keven Bluteau, Kris Boudt, Leopoldo Catania, "Forecasting risk with Markov-switching GARCH models:A large-scale performance study", International Journal of Forecasting, Volume 34, Issue 4
 
 [3] APA. Lopez de Prado, M. (2018). Advances in financial machine learning, 38-40
+
+[4] Jurczenko, Emmanuel, ed. Risk-based and factor investing. Elsevier, 2015. 10-12
