@@ -59,8 +59,8 @@ An illustration of MSGARCH on SPY: the black line is the probability of being in
 
 * Rebalance weekly, based on forecast volatility, following minimum variance principle across assets
 
-$$ Max_{W} \sum_i \sum_j w_i w_j \sigma_i sigma_j \rho_{ij}$$
-$$ s.t. \sum_i w_i = 1,\quad w_i \ge 0, \quad for i = 1,2,3,...,n$$
+$ Max_{W} \sum_i \sum_j w_i w_j \sigma_i sigma_j \rho_{ij}$
+$ s.t. \sum_i w_i = 1,\quad w_i \ge 0, \quad for i = 1,2,3,...,n$
 where $\sigma_i$ are forecast volatilities, which are obtained from the MSGARCH model.
 
 ## Reference
