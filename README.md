@@ -65,6 +65,9 @@ $s.t. \sum_i w_i = 1,\quad w_i \ge 0, \quad for i = 1,2,3,...,n$
 
 where $\sigma_i$ are forecast volatilities, which are obtained from the MSGARCH model.
 
+##
+See the notebook [here](https://github.com/CoookieYou/Markov-Switching-Crypto-Portfolio/blob/main/backtest.ipynb)
+
 ## Reference
 
 [1] Lam, K. and H. Yam (1997): “CUSUM techniques for technical trading in financial markets.” Financial Engineering and the Japanese Markets, Vol. 4, pp. 257–274
