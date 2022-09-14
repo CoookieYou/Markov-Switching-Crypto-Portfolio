@@ -34,7 +34,7 @@ Train the model with the selected samples.
   * Slope of Linear Regression
   * Return Volatility
   
-[Snapshot of technical indicators](<img src="https://user-images.githubusercontent.com/60916875/183321818-7e2fd509-469d-44db-b4e6-77ec59ef5819.png" width = "750">)
+<img src="https://user-images.githubusercontent.com/60916875/183321818-7e2fd509-469d-44db-b4e6-77ec59ef5819.png" width = "750">
 
   
 * Use random forest as a regressor to predict the direction of movements
@@ -50,7 +50,7 @@ where $D(0, h_{k,t})$, $\delta_k$ is a continuous distribution with a zero mean,
 
 An illustration of MSGARCH on SPY: the black line is the probability of being in the high volatility regime
 
-[Snapshot of MSGARCH]<img src="https://user-images.githubusercontent.com/60916875/183322196-b7c2b678-e552-4159-93ec-cd3b0a81ea14.png" width = "600">
+<img src="https://user-images.githubusercontent.com/60916875/183322196-b7c2b678-e552-4159-93ec-cd3b0a81ea14.png" width = "600">
 
 * Detect Volatility Regime for each instrument
 * Predict future volatility as the input of allocation model to replace realized volatility
@@ -61,7 +61,7 @@ An illustration of MSGARCH on SPY: the black line is the probability of being in
 
 * Use forecast instead of historical volatilities to construct covariance matrix
 
-$max_{W} \sum_i \sum_j w_i w_j \sigma_i \sigma_j \rho_{ij}$
+$\max_{W} \sum_i \sum_j w_i w_j \sigma_i \sigma_j \rho_{ij}$
 
 $s.t. \sum_i w_i = 1,\quad w_i \ge 0, \quad for i = 1,2,3,...,n$
 
