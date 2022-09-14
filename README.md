@@ -44,7 +44,7 @@ Train the model with the selected samples.
 
 The general Markov-Switching GARCH specification can be expressed as: (Ardia et al. 2017 https://doi.org/10.1016/j.ijforecast.2018.05.004.)
 
-<img src="https://render.githubusercontent.com/render/math?math=y_t|(s_t = k, F_{t-1}) \sim D(0, h_{k,t}, \delta_k)>
+$$y_t|(s_t = k, F_{t-1}) \sim D(0, h_{k,t}, \delta_k)$$
 
 where $D(0, h_{k,t})$, $\delta_k$ is a continuous distribution with a zero mean, time-varying variance $h_{k,t}$ , and additional shape parameters (e.g., asymmetry) gathered in the vector $\delta_k$. $s_t$ is the latent variables that evolves according to an unobserved first-order ergodic homogeneous Markov chain. $F_{t}$ is the filter of information we have by the time $t$.
 
@@ -61,9 +61,9 @@ An illustration of MSGARCH on SPY: the black line is the probability of being in
 
 * Use forecast instead of historical volatilities to construct covariance matrix
 
-                                    $\max_{W} \sum_i \sum_j w_i w_j \sigma_i \sigma_j \rho_{ij}$
+$$\max_{W} \sum_i \sum_j w_i w_j \sigma_i \sigma_j \rho_{ij}$$
 
-                                    $s.t. \sum_i w_i = 1,\quad w_i \ge 0, \quad for i = 1,2,3,...,n$
+$$s.t. \sum_i w_i = 1,\quad w_i \ge 0, \quad for i = 1,2,3,...,n$$
 
 where $\sigma_i$ are forecast volatilities, which are obtained from the MSGARCH model.
 
