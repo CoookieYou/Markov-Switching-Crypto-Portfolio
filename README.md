@@ -44,9 +44,7 @@ Train the model with the selected samples.
 
 The general Markov-Switching GARCH specification can be expressed as: (Ardia et al. 2017 https://doi.org/10.1016/j.ijforecast.2018.05.004.)
 
-\begin{equation}
-            y_t|(s_t = k, F_{t-1}) \sim D(0, h_{k,t}, \delta_k)
-\end{equation}
+![y_t|(s_t = k, F_{t-1}) \sim D(0, h_{k,t}, \delta_k)]
 
 where $D(0, h_{k,t})$, $\delta_k$ is a continuous distribution with a zero mean, time-varying variance $h_{k,t}$ , and additional shape parameters (e.g., asymmetry) gathered in the vector $\delta_k$. $s_t$ is the latent variables that evolves according to an unobserved first-order ergodic homogeneous Markov chain. $F_{t}$ is the filter of information we have by the time $t$.
 
