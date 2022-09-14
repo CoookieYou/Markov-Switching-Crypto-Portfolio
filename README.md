@@ -34,7 +34,7 @@ Train the model with the selected samples.
   * Slope of Linear Regression
   * Return Volatility
   
-[Snapshot of technical indicators]<img src="https://user-images.githubusercontent.com/60916875/183321818-7e2fd509-469d-44db-b4e6-77ec59ef5819.png" width = "750">
+[Snapshot of technical indicators](<img src="https://user-images.githubusercontent.com/60916875/183321818-7e2fd509-469d-44db-b4e6-77ec59ef5819.png" width = "750">)
 
   
 * Use random forest as a regressor to predict the direction of movements
